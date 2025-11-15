@@ -1,0 +1,68 @@
+# # deployment.yaml
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: flowise
+#   labels:
+#     app: flowise
+# spec:
+#   selector:
+#     matchLabels:
+#       app: flowise
+#   replicas: 1
+#   template:
+#     metadata:
+#       labels:
+#         app: flowise
+#     spec:
+#       containers:
+#       - name: flowise
+#         image: gcr.io/aisg-t-up/flowise:dev
+#         imagePullPolicy: Always
+#         resources: 
+#           requests:
+#             cpu: "1"
+#             memory: "1Gi"
+
+# new deployment.yaml to add persistent volume
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flowise
+  labels:
+    app: flowise
+spec:
+  selector:
+    matchLabels:
+      app: flowise
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: flowise
+    spec:
+      containers:
+      - name: flowise
+        image: gcr.io/aisg-t-up/flowise:dev
+        imagePullPolicy: Always
+        env:
+        - name: DATABASE_PATH
+          value: /root/.flowise
+        - name: SECRETKEY_PATH
+          value: /root/.flowise
+        - name: LOG_PATH
+          value: /root/.flowise/logs
+        - name: BLOB_STORAGE_PATH
+          value: /root/.flowise/storage
+        volumeMounts:
+        - name: flowise-storage
+          mountPath: /root/.flowise
+        resources: 
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+      volumes:
+      - name: flowise-storage
+        persistentVolumeClaim:
+          claimName: flowise-pvc
